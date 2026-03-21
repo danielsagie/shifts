@@ -1,0 +1,31 @@
+
+=== March 30, 31 Shift Analysis ===
+March 30 (Monday): Needed=3, Assigned=3 (Alona, Daniel V, Nitay)
+March 31 (Tuesday): Needed=3, Assigned=2 (Daniel V, Tom)
+
+=== March 27, 28, 29 Worker Analysis ===
+Worker 'Tom' is scheduled for all 3 days: [27, 28, 29]
+Preferences for Tom:
+  Start Limit: 8
+  Can Work (Preferred): [13, 27, 28, 23, 29, 31]
+  Cant Work: [4, 6, 7, 12, 14, 19, 20, 25]
+  Review: All 3 days are in 'can_work', so consecutive shifts are ALLOWED.
+
+=== Final Worker Stats ===
+May: 4/4 shifts
+Tom: 7/8 shifts
+Daniel Y: 4/4 shifts
+Alona: 5/5 shifts
+Shaked: 4/4 shifts
+Hila: 4/4 shifts
+Yonathan: 5/5 shifts
+Yoav: 5/8 shifts
+Neomi: 6/6 shifts
+Lihi: 4/4 shifts
+Ram: 2/2 shifts
+Alon: 3/3 shifts
+Daniel V: 8/10 shifts
+Tal: 5/5 shifts
+Miri: 3/3 shifts
+Noor: 4/5 shifts
+Nitay: 7/7 shifts

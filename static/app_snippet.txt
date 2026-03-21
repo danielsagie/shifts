@@ -1,0 +1,25 @@
+﻿// Violations column
+const violationsHtml = w.cant_work_violations.length > 0
+    ? w.cant_work_violations.map(d => `<span class=\""analysis-day violation\""> </span>`).join('')
+    : '<span style=\""color: var(--green)\""> None</span>';
+
+return `
+    <tr>
+        <td class=\""analysis-name\""></td>
+        <td class=\""analysis-shifts\"">
+            <span class=\""got\""></span>
+            <span class=\""separator\"">/</span>
+            <span></span>
+        </td>
+        <td></td>
+        <td>
+            <div class=\""pref-bar-container\"">
+                <div class=\""pref-bar\""><div class=\""pref-bar-fill\"" style=\""width:%\""></div></div>
+                <span class=\""pref-percent\"">%</span>
+            </div>
+        </td>
+        <td><div class=\""analysis-days\""></div></td>
+        <td><div class=\""analysis-days\""></div></td>
+        <td><div class=\""analysis-days\""></div></td>
+    </tr>
+`;

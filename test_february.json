@@ -1,0 +1,109 @@
+{
+    "month": 2,
+    "year": 2026,
+    "workers": [
+        {
+            "name": "alice",
+            "limit": 2,
+            "cant_work": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "can_work": []
+        },
+        {
+            "name": "bob",
+            "limit": 2,
+            "cant_work": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "can_work": []
+        },
+        {
+            "name": "charlie",
+            "limit": 3,
+            "cant_work": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "can_work": []
+        },
+        {
+            "name": "diana",
+            "limit": 2,
+            "cant_work": [],
+            "can_work": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ]
+        },
+        {
+            "name": "eve",
+            "limit": 2,
+            "cant_work": [],
+            "can_work": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ]
+        },
+        {
+            "name": "frank",
+            "limit": 2,
+            "cant_work": [],
+            "can_work": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ]
+        },
+        {
+            "name": "grace",
+            "limit": 2,
+            "cant_work": [],
+            "can_work": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ]
+        }
+    ]
+}
