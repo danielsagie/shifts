@@ -35,7 +35,7 @@
         <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 7h15M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7"/></symbol>
     </svg>
 
-    <div class="backdrop" aria-hidden="true"></div>
+    <div class="backdrop" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
     <!-- ===== Navigation bar (functional layer, glass) ===== -->
     <header class="navbar">
@@ -182,6 +182,8 @@
                     <span><i class="chip-swatch sw-empty"></i>Open slot</span>
                     <span class="legend-hint">Tap a name to replace it · tap a date to change staffing</span>
                 </div>
+                <div class="people-strip" id="people-strip" role="group" aria-label="Highlight a person"></div>
+                <div id="person-focus" hidden></div>
                 <div class="calendar-grid" id="calendar-grid"></div>
             </section>
 
@@ -191,7 +193,7 @@
                         <h3>Shifts per Person</h3>
                         <button class="link-btn" data-action="clear-filter" id="clear-filter" hidden>Clear</button>
                     </div>
-                    <p class="panel-sub">Tap people to highlight their shifts.</p>
+                    <p class="panel-sub">Tap someone to see where they work, what they asked for, and when they can't work.</p>
                     <div id="shift-totals-list" class="totals-list"></div>
                 </section>
                 <section class="panel" id="fairness-card">

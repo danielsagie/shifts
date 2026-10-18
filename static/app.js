@@ -129,6 +129,7 @@ function bindEvents() {
     });
 
     bindDayPicker();
+    bindPeerHover();
 }
 
 function onActionClick(e) {
@@ -775,13 +776,16 @@ function renderSchedule() {
                     }
                 }
 
+                const conflict = s.worker && workerByName(s.worker)?.cant_work.includes(d);
+                if (conflict) cls += ' conflict';
+
                 const label = s.worker ? esc(s.worker) : '+ Assign';
                 const deptText = s.dept === 'ER' ? ', ER' : s.dept === 'EXTRA' ? ', extra' : '';
                 const aria = s.worker
-                    ? `${s.worker}${deptText}, day ${d} ${time}${s.is_preferred ? ', preferred day' : ''}`
+                    ? `${s.worker}${deptText}, day ${d} ${time}${s.is_preferred ? ', preferred day' : ''}${conflict ? ", but they can't work this day" : ''}`
                     : `Open slot${deptText}, day ${d} ${time}. Assign someone`;
 
-                return `<button class="cal-worker-chip ${cls}" data-action="shift" data-day="${d}" data-idx="${s.originalIndex}" aria-label="${esc(aria)}">${label}${s.dept === 'ER' && s.worker ? '<span class="er-tag">ER</span>' : ''}</button>`;
+                return `<button class="cal-worker-chip ${cls}" data-action="shift" data-day="${d}" data-idx="${s.originalIndex}" ${s.worker ? `data-worker="${esc(s.worker)}"` : ''} aria-label="${esc(aria)}" ${conflict ? `title="${esc(s.worker)} can't work this day"` : ''}>${conflict ? icon('warn') : ''}${label}${s.dept === 'ER' && s.worker ? '<span class="er-tag">ER</span>' : ''}</button>`;
             }).join('');
 
             slotsHtml += `
@@ -797,9 +801,31 @@ function renderSchedule() {
         const status = active > needed ? 'over' : active < needed ? 'under' : 'perfect';
         dayData.demand_status = status;
 
+        // For highlighted people who aren't working this day: can't work, or wanted it but didn't get it
+        const working = new Set(slots.map(s => s.worker).filter(Boolean));
+        let marks = '';
+        let blocked = false;
+        let wanted = false;
+        for (const name of filterWorkers) {
+            if (working.has(name)) continue;
+            const w = workerByName(name);
+            if (!w) continue;
+            const who = filterWorkers.size > 1 ? esc(name) : '';
+            if (w.cant_work.includes(d)) {
+                blocked = true;
+                marks += `<span class="mark mark-cant">${icon('close')}${who || "Can't work"}</span>`;
+            } else if (w.can_work.includes(d)) {
+                wanted = true;
+                marks += `<span class="mark mark-wanted">${icon('heart')}${who || 'Wanted this day'}</span>`;
+            }
+        }
+
         let cellClass = 'cal-cell';
         if (swapMode) cellClass += ' swap-active';
         if (hasFilteredWorker) cellClass += ' day-highlight';
+        if (blocked) cellClass += ' day-blocked';
+        if (wanted) cellClass += ' day-wanted';
+        if (filterWorkers.size && !hasFilteredWorker && !blocked && !wanted) cellClass += ' day-idle';
         if (status === 'over') cellClass += ' cell-overbooked';
         else if (status === 'under') cellClass += ' cell-underbooked';
         else cellClass += ' cell-perfect';
@@ -813,6 +839,7 @@ function renderSchedule() {
                 <button class="cal-day-num" data-action="edit-day" data-day="${d}" aria-label="${wd} ${d}: ${active} of ${needed} staffed, ${statusText}. Change staffing" title="Change staffing for day ${d}">
                     <b>${d}</b><span class="cal-weekday">${wd}</span><span class="cal-count">${active}/${needed}</span>
                 </button>
+                ${marks ? `<div class="cal-marks">${marks}</div>` : ''}
                 ${slotsHtml}
             </div>
         `;
@@ -821,8 +848,109 @@ function renderSchedule() {
     grid.innerHTML = html;
 
     renderShiftTotals();
+    renderPeopleStrip();
+    renderPersonFocus();
     renderFairnessSummary();
     renderSwapUI();
+}
+
+function workerByName(name) {
+    return workersData.find(w => w.name === name);
+}
+
+function renderPeopleStrip() {
+    const sorted = [...scheduleData.analysis].sort((a, b) => a.name.localeCompare(b.name));
+    $('#people-strip').innerHTML = sorted.map(w => {
+        const active = filterWorkers.has(w.name);
+        return `
+            <button class="person-pill ${active ? 'active' : ''}" data-action="filter" data-name="${esc(w.name)}" aria-pressed="${active}">
+                ${avatar(w.name)}<span>${esc(w.name)}</span><small>${w.got}/${w.target}</small>
+            </button>
+        `;
+    }).join('');
+}
+
+function renderPersonFocus() {
+    const box = $('#person-focus');
+    if (!filterWorkers.size) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+    }
+    box.hidden = false;
+
+    const legend = `
+        <div class="focus-legend">
+            <span><i class="mk mk-work"></i>Working</span>
+            <span><i class="mk mk-wanted"></i>Wanted the day, didn't get it</span>
+            <span><i class="mk mk-cant"></i>Can't work</span>
+            <span><i class="mk mk-idle"></i>Other days</span>
+        </div>
+    `;
+
+    if (filterWorkers.size === 1) {
+        const [name] = filterWorkers;
+        const a = scheduleData.analysis.find(x => x.name === name);
+        const w = workerByName(name);
+        if (!a || !w) return;
+        const missed = a.requested.filter(d => !a.matched.includes(d));
+        const conflicts = a.cant_work_violations.length;
+        const gotCls = a.got < a.target ? 'warn' : a.got > a.target ? 'bad' : 'good';
+
+        box.innerHTML = `
+            <div class="focus-card">
+                <div class="focus-id">
+                    ${avatar(name)}
+                    <div>
+                        <strong>${esc(name)}</strong>
+                        <span>Works ${a.result.length ? `days ${a.result.join(', ')}` : 'no days yet'}</span>
+                    </div>
+                    <button class="icon-btn" data-action="clear-filter" aria-label="Stop highlighting ${esc(name)}">${icon('close')}</button>
+                </div>
+                <div class="focus-stats">
+                    <div class="${gotCls}"><b>${a.got}<small>/${a.target}</small></b><span>Shifts vs target</span></div>
+                    <div><b>${a.matched.length}<small>/${a.requested.length}</small></b><span>Wishes granted</span></div>
+                    <div><b>${w.cant_work.length}</b><span>Can't-work days</span></div>
+                    <div class="${conflicts ? 'bad' : 'good'}"><b>${conflicts}</b><span>${conflicts ? 'Booked on a blocked day' : 'No conflicts'}</span></div>
+                </div>
+                ${missed.length ? `<p class="focus-note">${icon('heart')} Asked for ${missed.length === 1 ? 'day' : 'days'} ${missed.join(', ')} but wasn't scheduled.</p>` : ''}
+                ${legend}
+            </div>
+        `;
+        return;
+    }
+
+    const people = [...filterWorkers].map(name => {
+        const a = scheduleData.analysis.find(x => x.name === name);
+        return `<button class="person-pill active" data-action="filter" data-name="${esc(name)}" aria-label="Stop highlighting ${esc(name)}">${avatar(name)}<span>${esc(name)}</span><small>${a ? `${a.got}/${a.target}` : ''}</small>${icon('close')}</button>`;
+    }).join('');
+    box.innerHTML = `
+        <div class="focus-card">
+            <div class="focus-id">
+                <div><strong>Comparing ${filterWorkers.size} people</strong><span>Day tags show who can't work or wanted the day.</span></div>
+                <button class="link-btn" data-action="clear-filter">Clear</button>
+            </div>
+            <div class="focus-people">${people}</div>
+            ${legend}
+        </div>
+    `;
+}
+
+function bindPeerHover() {
+    const grid = $('#calendar-grid');
+    let current = null;
+    const set = (name) => {
+        if (name === current) return;
+        $$('.cal-worker-chip.peer', grid).forEach(c => c.classList.remove('peer'));
+        current = name;
+        if (name) $$(`.cal-worker-chip[data-worker="${CSS.escape(name)}"]`, grid).forEach(c => c.classList.add('peer'));
+        grid.classList.toggle('peering', !!name);
+    };
+    grid.addEventListener('pointerover', (e) => {
+        if (e.pointerType === 'touch') return;
+        set(e.target.closest('.cal-worker-chip[data-worker]')?.dataset.worker || null);
+    });
+    grid.addEventListener('pointerleave', () => set(null));
 }
 
 function canSwap(source, targetDay, targetSlot) {
