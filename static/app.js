@@ -930,7 +930,7 @@ function renderPersonFocus() {
                 </div>
                 <div class="focus-stats">
                     <div class="${gotCls}"><b>${a.got}<small>/${a.target}</small></b><span>Shifts vs target</span></div>
-                    <div><b>${a.matched.length}<small>/${a.requested.length}</small></b><span>Wishes granted</span></div>
+                    <div><b>${a.matched.length}<small>/${a.wishes_possible ?? a.requested.length}</small></b><span>Wishes granted${a.requested.length > (a.wishes_possible ?? a.requested.length) ? ` (asked ${a.requested.length} days)` : ''}</span></div>
                     <div><b>${w.cant_work.length}</b><span>Can't-work days</span></div>
                     <div class="${conflicts ? 'bad' : 'good'}"><b>${conflicts}</b><span>${conflicts ? 'Booked on a blocked day' : 'No conflicts'}</span></div>
                 </div>
@@ -1042,7 +1042,7 @@ function renderAnalysis() {
                 <td>
                     <div class="pref-bar-container">
                         <div class="pref-bar"><div class="pref-bar-fill" style="width:${Math.max(w.preference_match, 4)}%"></div></div>
-                        <span class="pref-percent">${w.preference_match}%</span>
+                        <span class="pref-percent" title="${w.matched.length} of ${w.wishes_possible ?? w.requested.length} possible requested days granted">${w.preference_match}%</span>
                     </div>
                 </td>
                 <td><div class="analysis-days">${requestedHtml}</div></td>

@@ -248,7 +248,9 @@ def calculate_stats(cal, detailed_schedule):
                     assigned_days.add(day_int)
         
         matched = requested & assigned_days
-        pref_match = round(len(matched) / len(requested) * 100) if requested else 100
+        # A worker can only be granted as many requested days as their shift target
+        wishes_possible = min(len(requested), worker.limit)
+        pref_match = min(100, round(len(matched) / wishes_possible * 100)) if wishes_possible else 100
         
         # Check for can't work violations
         cant_work_set = set(worker.cant_work)
@@ -260,6 +262,7 @@ def calculate_stats(cal, detailed_schedule):
             "target": worker.limit,
             "er": er,
             "preference_match": pref_match,
+            "wishes_possible": wishes_possible,
             "requested": sorted(list(requested)),
             "result": sorted(list(assigned_days)),
             "matched": sorted(list(matched)),
