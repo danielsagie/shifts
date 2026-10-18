@@ -411,7 +411,129 @@ def assign_departments_starting_point(cal: Calendar, schedule: Dict[int, List[st
     return detailed
 
 
-def generate_schedule(cal: Calendar) -> Dict[int, List[str]]:
+COVERAGE_SLACK = 1
+
+# (status, objective, seconds) per optimisation stage of the last CP-SAT run
+stage_log: List[Tuple[str, int, float]] = []
+
+
+def generate_schedule(cal: Calendar, time_limit_per_stage: float = 5.0,
+                      coverage_slack: int = COVERAGE_SLACK) -> Dict[int, List[str]]:
+    """
+    Generate the schedule with OR-Tools CP-SAT (employee scheduling with shift
+    requests), falling back to the greedy algorithm if OR-Tools is not installed.
+    """
+    try:
+        from ortools.sat.python import cp_model
+    except ImportError:
+        return generate_schedule_greedy(cal)
+    return generate_schedule_cp(cal, cp_model, time_limit_per_stage, coverage_slack)
+
+
+def generate_schedule_cp(cal: Calendar, cp_model, time_limit_per_stage: float = 5.0,
+                         coverage_slack: int = COVERAGE_SLACK) -> Dict[int, List[str]]:
+    """
+    Employee scheduling as a constraint program, solved with lexicographic
+    optimisation: each stage is solved to its best value, which is then locked
+    in as a constraint before the next stage runs.
+
+    Hard rules:
+        - nobody works a day in their cant_work
+        - nobody exceeds their shift limit
+        - at most the required number of people per day
+        - no consecutive shifts unless both days are in the worker's can_work
+
+    Stages:
+        1. Fill as many slots as possible, leaving at most `coverage_slack`
+           more open than the best possible so low-limit workers' wishes can win.
+        2. For each group of workers with the same limit, lowest limit first:
+           reach their shift count, then place them on their preferred days.
+        3. Fill any slots the slack turned out not to need.
+        4. Spread any remaining shortfall evenly (minimise the largest gap
+           between a worker's limit and the shifts they got).
+    """
+    days = list(cal.iter_days())
+    model = cp_model.CpModel()
+
+    x: Dict[Tuple[str, int], object] = {}
+    for w in cal.workers:
+        cant = set(w.cant_work)
+        for d in days:
+            if d not in cant:
+                x[w.name, d] = model.NewBoolVar(f"x[{w.name},{d}]")
+
+    for d in days:
+        on_day = [x[w.name, d] for w in cal.workers if (w.name, d) in x]
+        if on_day:
+            model.Add(sum(on_day) <= cal.get_shifts_needed(d))
+
+    count = {}
+    preferred = {}
+    for w in cal.workers:
+        mine = [x[w.name, d] for d in days if (w.name, d) in x]
+        count[w.name] = sum(mine) if mine else 0
+        if mine:
+            model.Add(sum(mine) <= w.limit)
+        wanted = [x[w.name, d] for d in w.can_work if (w.name, d) in x]
+        preferred[w.name] = sum(wanted) if wanted else 0
+
+        can = set(w.can_work)
+        for d in days[:-1]:
+            a, b = x.get((w.name, d)), x.get((w.name, d + 1))
+            if a is not None and b is not None and not (d in can and d + 1 in can):
+                model.Add(a + b <= 1)
+
+    if not x:
+        return {day: [] for day in days}
+
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = time_limit_per_stage
+    solver.parameters.num_workers = 8
+    solver.parameters.random_seed = 0
+
+    stage_log.clear()
+
+    def optimise(expr, maximise: bool = True, lock_offset: int = 0) -> None:
+        if isinstance(expr, int):
+            return
+        model.Maximize(expr) if maximise else model.Minimize(expr)
+        status = solver.Solve(model)
+        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            raise RuntimeError("No feasible schedule found")
+        best = round(solver.ObjectiveValue())
+        stage_log.append((solver.StatusName(status), best, round(solver.WallTime(), 2)))
+        model.Add(expr >= best - lock_offset) if maximise else model.Add(expr <= best + lock_offset)
+        model.ClearHints()
+        for var in x.values():
+            model.AddHint(var, solver.Value(var))
+
+    # Stage 1: coverage, allowing `coverage_slack` open slots beyond the best possible
+    coverage = sum(x.values())
+    optimise(coverage, lock_offset=coverage_slack)
+
+    # Stage 2: lowest limits first; reaching the count outranks the preferred days
+    count_weight = cal.days_in_month + 1
+    for limit in sorted({w.limit for w in cal.workers}):
+        group = [w for w in cal.workers if w.limit == limit]
+        optimise(sum(count_weight * count[w.name] + preferred[w.name] for w in group))
+
+    # Fill whatever the slack did not need
+    optimise(coverage)
+
+    # Stage 4: even out what is left
+    max_gap = model.NewIntVar(0, max(w.limit for w in cal.workers), "max_gap")
+    for w in cal.workers:
+        model.Add(w.limit - count[w.name] <= max_gap)
+    optimise(max_gap, maximise=False)
+
+    schedule: Dict[int, List[str]] = {d: [] for d in days}
+    for (name, d), var in x.items():
+        if solver.Value(var):
+            schedule[d].append(name)
+    return schedule
+
+
+def generate_schedule_greedy(cal: Calendar) -> Dict[int, List[str]]:
     """
     Generate a fair shift schedule using a 3-phase algorithm.
     
