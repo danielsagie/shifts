@@ -2,267 +2,380 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShiftMaster AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <title>Shifts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Top Navigation Bar -->
-    <header class="top-bar">
-        <div class="logo">
-            <span class="logo-icon">&#9889;</span>
-            <span class="logo-text">ShiftMaster AI</span>
-        </div>
-        <div class="top-actions">
-            <!-- Hidden file input for import -->
-            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSchedule(event)">
-            <button class="btn-secondary" onclick="document.getElementById('import-file').click()">📥 Import</button>
-            <button class="btn-secondary" onclick="exportSchedule()">📤 Export</button>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+        <symbol id="i-people" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19M10 10.5a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5ZM20 19v-1.5a3.5 3.5 0 0 0-2.5-3.35M15 4.2a3.25 3.25 0 0 1 0 6.1"/></symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 20V11M12 20V4M19 20v-6"/></symbol>
+        <symbol id="i-sparkles" viewBox="0 0 24 24"><path fill="currentColor" d="M10 3.5c.3 0 .55.2.62.48l.9 3.6a3 3 0 0 0 2.2 2.2l3.6.9a.64.64 0 0 1 0 1.24l-3.6.9a3 3 0 0 0-2.2 2.2l-.9 3.6a.64.64 0 0 1-1.24 0l-.9-3.6a3 3 0 0 0-2.2-2.2l-3.6-.9a.64.64 0 0 1 0-1.24l3.6-.9a3 3 0 0 0 2.2-2.2l.9-3.6A.64.64 0 0 1 10 3.5Zm8 -1c.2 0 .36.13.4.32l.33 1.3a1.2 1.2 0 0 0 .88.88l1.3.33a.42.42 0 0 1 0 .8l-1.3.33a1.2 1.2 0 0 0-.88.88l-.33 1.3a.42.42 0 0 1-.8 0l-.33-1.3a1.2 1.2 0 0 0-.88-.88l-1.3-.33a.42.42 0 0 1 0-.8l1.3-.33a1.2 1.2 0 0 0 .88-.88l.33-1.3A.42.42 0 0 1 18 2.5Z"/></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 20s-7.5-4.4-7.5-10A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 7.5 3c0 5.6-7.5 10-7.5 10Z"/></symbol>
+        <symbol id="i-swap" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 4 3.5 7.5 7 11M3.5 7.5H17M17 13l3.5 3.5L17 20M20.5 16.5H7"/></symbol>
+        <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="18" cy="12" r="1.7" fill="currentColor"/></symbol>
+        <symbol id="i-import" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+        <symbol id="i-export" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15V4M7.5 8.5 12 4l4.5 4.5M8 11H6a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-2"/></symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.5 12A7.5 7.5 0 1 1 17 6.4M19.5 4v4h-4"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-minus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 12h14"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+        <symbol id="i-chev-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+        <symbol id="i-chev-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+        <symbol id="i-chev-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5.5 9.5 12 16l6.5-6.5"/></symbol>
+        <symbol id="i-warn" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M10.3 4.2 2.9 17.5A2 2 0 0 0 4.6 20.5h14.8a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 9.5v4"/><circle cx="12" cy="16.8" r="1.1" fill="currentColor"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM15.5 15.5 20 20"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 7h15M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7"/></symbol>
+    </svg>
 
-            <button class="btn-secondary" onclick="resetForm()">&#8635; Reset Form</button>
-            <button class="btn-secondary btn-preferred" onclick="generatePreferredSchedule()">&#9881; Manual Schedule</button>
-            <button class="btn-generate" onclick="generateSchedule()">Generate Schedule &#9654;</button>
+    <div class="backdrop" aria-hidden="true"></div>
+
+    <!-- ===== Navigation bar (functional layer, glass) ===== -->
+    <header class="navbar">
+        <div class="navbar-leading">
+            <div class="month-stepper" role="group" aria-label="Scheduling month">
+                <button class="icon-btn" data-action="prev-month" aria-label="Previous month">
+                    <svg><use href="#i-chev-left"/></svg>
+                </button>
+                <h1 class="month-title" id="month-title" aria-live="polite">—</h1>
+                <button class="icon-btn" data-action="next-month" aria-label="Next month">
+                    <svg><use href="#i-chev-right"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <nav class="tabbar" role="tablist" aria-label="Sections">
+            <button class="tab" role="tab" data-tab="setup" aria-selected="true">
+                <svg><use href="#i-people"/></svg><span>Team</span>
+            </button>
+            <button class="tab" role="tab" data-tab="schedule" aria-selected="false">
+                <svg><use href="#i-calendar"/></svg><span>Schedule</span>
+            </button>
+            <button class="tab" role="tab" data-tab="analysis" aria-selected="false">
+                <svg><use href="#i-chart"/></svg><span>Analysis</span>
+            </button>
+        </nav>
+
+        <div class="navbar-trailing">
+            <button class="btn btn-glass hide-compact" data-action="generate-preferred" title="Place everyone on their preferred days only, as a starting point">
+                <svg><use href="#i-heart"/></svg><span>From Preferences</span>
+            </button>
+            <button class="btn btn-prominent" data-action="generate">
+                <svg><use href="#i-sparkles"/></svg><span>Generate</span>
+            </button>
+            <div class="menu-anchor">
+                <button class="icon-btn icon-btn-glass" data-action="toggle-menu" aria-haspopup="menu" aria-expanded="false" aria-label="More actions">
+                    <svg><use href="#i-more"/></svg>
+                </button>
+                <div class="menu glass" id="more-menu" role="menu" hidden>
+                    <button role="menuitem" class="menu-item show-compact" data-action="generate-preferred">
+                        <svg><use href="#i-heart"/></svg>Generate From Preferences
+                    </button>
+                    <button role="menuitem" class="menu-item" data-action="import">
+                        <svg><use href="#i-import"/></svg>Import Schedule…
+                    </button>
+                    <button role="menuitem" class="menu-item" data-action="export">
+                        <svg><use href="#i-export"/></svg>Export Schedule
+                    </button>
+                    <div class="menu-sep" role="separator"></div>
+                    <button role="menuitem" class="menu-item" data-action="reload">
+                        <svg><use href="#i-refresh"/></svg>Reload Team Data
+                    </button>
+                </div>
+            </div>
+            <input type="file" id="import-file" accept=".json" hidden>
         </div>
     </header>
 
-    <!-- Tab Navigation -->
-    <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="setup" onclick="switchTab('setup')">&#128203; Setup & Team</button>
-        <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">&#128197; Schedule</button>
-        <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">&#128202; Analysis</button>
-    </nav>
+    <!-- ===== TAB: TEAM ===== -->
+    <main id="tab-setup" class="page active" role="tabpanel">
+        <section class="summary" aria-label="Month summary">
+            <div class="metric">
+                <span class="metric-value" id="total-shifts">0</span>
+                <span class="metric-label">Shifts to fill</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value" id="total-asked">0</span>
+                <span class="metric-label">Team capacity</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value" id="shift-balance">0</span>
+                <span class="metric-label" id="shift-balance-label">Balance</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value" id="team-size">0</span>
+                <span class="metric-label">People</span>
+            </div>
+        </section>
 
-    <!-- ========= TAB 1: SETUP & TEAM ========= -->
-    <main id="tab-setup" class="tab-content active">
-        <!-- Shift Parameters -->
-        <section class="card">
-            <div class="card-row">
+        <section class="panel" id="health-panel" aria-labelledby="health-title">
+            <div class="panel-head">
+                <div class="health-status" id="health-status">
+                    <h2 id="health-title">Checking month…</h2>
+                    <p class="panel-sub" id="health-sub"></p>
+                </div>
+            </div>
+            <div id="health-body"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="team-title">
+            <div class="panel-head">
                 <div>
-                    <h2>&#128197; Shift Parameters</h2>
-                    <p class="subtitle">Configure the timeline for generation.</p>
+                    <h2 id="team-title">Team</h2>
+                    <p class="panel-sub" id="rules-badge">Availability for this month</p>
                 </div>
-                <div class="params-grid">
-                    <div class="param">
-                        <label>MONTH</label>
-                        <select id="month-select">
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
-                    </div>
-                    <div class="param">
-                        <label>YEAR</label>
-                        <input type="number" id="year-input" value="2026">
-                    </div>
-                    <div class="param">
-                        <label>TEAM SIZE</label>
-                        <div class="team-size-display" id="team-size">&#128101; 0</div>
-                    </div>
+                <div class="panel-tools">
+                    <label class="search">
+                        <svg aria-hidden="true"><use href="#i-search"/></svg>
+                        <input type="search" id="team-search" placeholder="Search" aria-label="Search team">
+                    </label>
+                    <button class="btn btn-tinted" data-action="add-worker">
+                        <svg><use href="#i-plus"/></svg><span>Add Person</span>
+                    </button>
                 </div>
             </div>
+            <div class="legend" aria-hidden="true">
+                <span><i class="dot dot-pref"></i>Preferred</span>
+                <span><i class="dot dot-cant"></i>Can't work</span>
+                <span><i class="dot"></i>Available</span>
+            </div>
+            <div class="workers-grid" id="workers-grid"></div>
         </section>
+    </main>
 
-        <!-- Shift Stats -->
-        <section class="card stats-row">
-            <div class="stat-item">
-                <span class="stat-label">Total Shifts Needed</span>
-                <span class="stat-value" id="total-shifts">0</span>
+    <!-- ===== TAB: SCHEDULE ===== -->
+    <main id="tab-schedule" class="page" role="tabpanel">
+        <div class="empty-hero" id="schedule-empty">
+            <div class="empty-icon"><svg><use href="#i-calendar"/></svg></div>
+            <h2>No schedule yet</h2>
+            <p>Generate a fair schedule for the whole team, or start from everyone's preferred days and adjust by hand.</p>
+            <div class="empty-actions">
+                <button class="btn btn-prominent btn-lg" data-action="generate"><svg><use href="#i-sparkles"/></svg><span>Generate Schedule</span></button>
+                <button class="btn btn-glass btn-lg" data-action="generate-preferred"><svg><use href="#i-heart"/></svg><span>From Preferences</span></button>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Total Shifts Asked</span>
-                <span class="stat-value" id="total-asked">0</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Balance</span>
-                <span class="stat-value" id="shift-balance">0</span>
-            </div>
-        </section>
+        </div>
 
-        <!-- Scheduling Health Alerts -->
-        <section class="card alerts-section" id="alerts-section">
-            <h2>&#9888; Scheduling Health Alerts</h2>
-            <div class="alerts-container" id="alerts-container">
-                <p class="no-alerts">Loading...</p>
-            </div>
-        </section>
+        <div class="schedule-layout" id="schedule-content" hidden>
+            <section class="panel schedule-main">
+                <div class="panel-head">
+                    <div>
+                        <h2 id="schedule-title">Schedule</h2>
+                        <div class="coverage" id="schedule-subtitle-container"></div>
+                    </div>
+                    <div class="panel-tools">
+                        <button id="btn-swap-mode" class="btn btn-glass" data-action="toggle-swap" aria-pressed="false">
+                            <svg><use href="#i-swap"/></svg><span>Swap Shifts</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="legend" aria-hidden="true">
+                    <span><i class="chip-swatch sw-pref"></i>Preferred day</span>
+                    <span><i class="chip-swatch sw-er"></i>ER</span>
+                    <span><i class="chip-swatch sw-normal"></i>Assigned</span>
+                    <span><i class="chip-swatch sw-empty"></i>Open slot</span>
+                    <span class="legend-hint">Tap a name to replace it · tap a date to change staffing</span>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </section>
 
-        <!-- Team Availability -->
-        <section class="card">
-            <div class="card-row">
-                <h2>&#128101; Team Availability</h2>
-                <span class="badge" id="rules-badge">0 custom rules set</span>
-            </div>
-            
-            <!-- Add Person -->
-            <div class="add-person-row">
-                <input type="text" id="new-worker-name" placeholder="Enter staff name...">
-                <button class="btn-add" onclick="showAddWorkerModal()">&#128100; Add Person</button>
-            </div>
-        </section>
-
-        <!-- Worker Cards -->
-        <div class="workers-grid" id="workers-grid">
-            <!-- Populated by JS -->
+            <aside class="schedule-sidebar">
+                <section class="panel">
+                    <div class="panel-head tight">
+                        <h3>Shifts per Person</h3>
+                        <button class="link-btn" data-action="clear-filter" id="clear-filter" hidden>Clear</button>
+                    </div>
+                    <p class="panel-sub">Tap people to highlight their shifts.</p>
+                    <div id="shift-totals-list" class="totals-list"></div>
+                </section>
+                <section class="panel" id="fairness-card">
+                    <h3>Fairness</h3>
+                    <div id="fairness-summary"></div>
+                </section>
+            </aside>
         </div>
     </main>
 
-    <!-- ========= TAB 2: SCHEDULE ========= -->
-    <main id="tab-schedule" class="tab-content">
-        <div class="schedule-layout">
-            <div class="schedule-main">
-                <div class="card">
-                    <div class="card-row">
+    <!-- ===== TAB: ANALYSIS ===== -->
+    <main id="tab-analysis" class="page" role="tabpanel">
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Fairness &amp; Preferences</h2>
+                    <p class="panel-sub">How each person's month turned out against what they asked for.</p>
+                </div>
+                <div class="analysis-header-stats">
+                    <div class="metric metric-sm">
+                        <span class="metric-value" id="analysis-total">0</span>
+                        <span class="metric-label">Shifts assigned</span>
+                    </div>
+                    <div class="metric metric-sm">
+                        <span class="metric-value" id="analysis-fairness">–</span>
+                        <span class="metric-label">Shifts per person</span>
+                    </div>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="analysis-table" id="analysis-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Person</th>
+                            <th scope="col">Shifts</th>
+                            <th scope="col">ER</th>
+                            <th scope="col">Preference Match</th>
+                            <th scope="col">Requested Days</th>
+                            <th scope="col">Assigned Days</th>
+                            <th scope="col">Conflicts</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-tbody">
+                        <tr><td colspan="7" class="empty-state">Generate a schedule to see the analysis.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== Sheets (functional layer) ===== -->
+    <div class="sheet-overlay" id="modal-overlay" hidden>
+        <div class="sheet glass" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="sheet-grabber" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <button class="btn btn-plain" data-action="close-sheet">Cancel</button>
+                <h3 id="modal-title">Edit Person</h3>
+                <button class="btn btn-prominent btn-sm" id="modal-save-btn" data-action="save-worker">Save</button>
+            </div>
+            <div class="sheet-body">
+                <div class="field-group">
+                    <label class="field">
+                        <span class="field-label">Name</span>
+                        <input type="text" id="modal-name" autocomplete="off" placeholder="Full name">
+                    </label>
+                    <div class="field field-row">
                         <div>
-                            <h2 id="schedule-title">Schedule</h2>
-                            <div class="subtitle" id="schedule-subtitle-container">
-                                <span id="schedule-subtitle">Generate a schedule to view it here.</span>
+                            <span class="field-label">Shift target</span>
+                            <span class="field-help" id="limit-help">Automatic, based on the month</span>
+                        </div>
+                        <div class="limit-controls">
+                            <label class="switch">
+                                <input type="checkbox" id="modal-limit-auto" checked>
+                                <span class="switch-track" aria-hidden="true"></span>
+                                <span class="switch-text">Auto</span>
+                            </label>
+                            <div class="stepper" id="limit-stepper">
+                                <button type="button" class="stepper-btn" data-step="-1" aria-label="Fewer shifts"><svg><use href="#i-minus"/></svg></button>
+                                <input type="number" id="modal-limit" min="0" max="31" inputmode="numeric" aria-label="Shift target">
+                                <button type="button" class="stepper-btn" data-step="1" aria-label="More shifts"><svg><use href="#i-plus"/></svg></button>
                             </div>
                         </div>
-                        <div class="schedule-actions">
-                            <button id="btn-swap-mode" class="btn-secondary" onclick="toggleSwapMode()">&#8646; Swap Shifts</button>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="avail-head">
+                        <span class="field-label">Availability</span>
+                        <div class="segmented" role="radiogroup" aria-label="Paint mode" id="paint-mode">
+                            <button role="radio" aria-checked="true" data-paint="pref"><i class="dot dot-pref"></i>Preferred</button>
+                            <button role="radio" aria-checked="false" data-paint="cant"><i class="dot dot-cant"></i>Can't Work</button>
+                            <button role="radio" aria-checked="false" data-paint="clear"><i class="dot"></i>Clear</button>
                         </div>
                     </div>
-                    <div class="calendar-grid" id="calendar-grid">
-                        <!-- Populated by JS -->
-                    </div>
+                    <p class="field-help">Tap or drag across days to paint them.</p>
+                    <div class="day-picker" id="day-picker" aria-label="Days of the month"></div>
+                    <div class="avail-count" id="avail-count"></div>
                 </div>
-            </div>
-            <div class="schedule-sidebar">
-                <div class="card">
-                    <h3>SHIFT TOTALS <span class="click-filter">Click to filter</span></h3>
-                    <div id="shift-totals-list">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-                <div class="card" id="fairness-card">
-                    <h3>Fairness Analysis</h3>
-                    <div id="fairness-summary">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
 
-    <!-- ========= TAB 3: ANALYSIS ========= -->
-    <main id="tab-analysis" class="tab-content">
-        <div class="card">
-            <div class="card-row">
-                <h2>Fairness & Preference Analysis</h2>
-                <div class="analysis-header-stats">
-                    <div class="param">
-                        <label>TOTAL SHIFTS</label>
-                        <span class="stat-value" id="analysis-total">0</span>
-                    </div>
-                    <div class="param">
-                        <label>GLOBAL FAIRNESS</label>
-                        <span class="stat-value" id="analysis-fairness">-</span>
-                    </div>
-                </div>
-            </div>
-            <table class="analysis-table" id="analysis-table">
-                <thead>
-                    <tr>
-                        <th>STAFF MEMBER</th>
-                        <th>SHIFTS (GOT / TARGET)</th>
-                        <th>ER SHIFTS</th>
-                        <th>PREFERENCE MATCH</th>
-                        <th>REQUESTED</th>
-                        <th>RESULT</th>
-                        <th>VIOLATIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="analysis-tbody">
-                    <tr><td colspan="7" class="empty-state">Generate a schedule to see analysis.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
-
-    <!-- Edit Worker Modal -->
-    <div class="modal-overlay" id="modal-overlay" style="display:none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modal-title">Edit Worker</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="modal-name">
-                </div>
-                <div class="form-group">
-                    <label>Shift Limit (leave empty for auto)</label>
-                    <input type="number" id="modal-limit" placeholder="Auto">
-                </div>
-                <div class="form-group">
-                    <label>Can't Work Days (comma-separated, e.g. 1,5,10)</label>
-                    <input type="text" id="modal-cant-work" placeholder="e.g. 1, 5, 10">
-                </div>
-                <div class="form-group">
-                    <label>Preferred Days (comma-separated, e.g. 2,9,18)</label>
-                    <input type="text" id="modal-can-work" placeholder="e.g. 2, 9, 18">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn-generate" id="modal-save-btn" onclick="saveWorker()">Save</button>
+                <button class="btn btn-destructive btn-block" id="modal-delete-btn" data-action="delete-worker">
+                    <svg><use href="#i-trash"/></svg><span>Remove From Team</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Edit Day Requirements Modal -->
-    <div class="modal-overlay" id="edit-day-modal-overlay" style="display:none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="edit-day-modal-title">Edit Requirements</h3>
-                <button class="modal-close" onclick="closeEditDayModal()">&times;</button>
+    <div class="sheet-overlay" id="edit-day-modal-overlay" hidden>
+        <div class="sheet sheet-sm glass" role="dialog" aria-modal="true" aria-labelledby="edit-day-modal-title">
+            <div class="sheet-grabber" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <button class="btn btn-plain" data-action="close-sheet">Cancel</button>
+                <h3 id="edit-day-modal-title">Staffing</h3>
+                <button class="btn btn-prominent btn-sm" data-action="save-day">Save</button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Regular (DEP) Shifts</label>
-                    <input type="number" id="modal-day-dep" min="0">
+            <div class="sheet-body">
+                <div class="field-group">
+                    <div class="field field-row">
+                        <div>
+                            <span class="field-label">Regular shifts</span>
+                            <span class="field-help">Department (DEP)</span>
+                        </div>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" data-step="-1" aria-label="Fewer regular shifts"><svg><use href="#i-minus"/></svg></button>
+                            <input type="number" id="modal-day-dep" min="0" inputmode="numeric" aria-label="Regular shifts">
+                            <button type="button" class="stepper-btn" data-step="1" aria-label="More regular shifts"><svg><use href="#i-plus"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="field field-row">
+                        <div>
+                            <span class="field-label">ER shifts</span>
+                            <span class="field-help">Emergency room</span>
+                        </div>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" data-step="-1" aria-label="Fewer ER shifts"><svg><use href="#i-minus"/></svg></button>
+                            <input type="number" id="modal-day-er" min="0" inputmode="numeric" aria-label="ER shifts">
+                            <button type="button" class="stepper-btn" data-step="1" aria-label="More ER shifts"><svg><use href="#i-plus"/></svg></button>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ER Shifts</label>
-                    <input type="number" id="modal-day-er" min="0">
-                </div>
-                <button class="btn-secondary" style="border-color:var(--red); color:var(--red); margin-top:20px; width:100%" onclick="resetDayToDefault()">Reset to Default</button>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeEditDayModal()">Cancel</button>
-                <button class="btn-generate" onclick="saveDayRequirements()">Save</button>
+                <p class="field-help">Saving rebuilds the schedule from preferences so the new staffing shows up.</p>
+                <button class="btn btn-glass btn-block" data-action="reset-day">Reset to Default Staffing</button>
             </div>
         </div>
     </div>
 
-    <!-- Replace Worker Modal -->
-    <div class="modal-overlay" id="replace-modal-overlay" style="display:none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Replace Worker</h3>
-                <button class="modal-close" onclick="closeReplaceModal()">&times;</button>
+    <div class="sheet-overlay" id="replace-modal-overlay" hidden>
+        <div class="sheet glass" role="dialog" aria-modal="true" aria-labelledby="replace-title">
+            <div class="sheet-grabber" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <button class="btn btn-plain" data-action="close-sheet">Cancel</button>
+                <h3 id="replace-title">Assign Shift</h3>
+                <span class="sheet-header-spacer"></span>
             </div>
-            <div class="modal-body">
-                <p class="subtitle">Select a worker to take this shift:</p>
-                <div id="replace-list" class="worker-select-list">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeReplaceModal()">Cancel</button>
+            <div class="sheet-body">
+                <p class="field-help" id="replace-sub"></p>
+                <label class="search search-block">
+                    <svg aria-hidden="true"><use href="#i-search"/></svg>
+                    <input type="search" id="replace-search" placeholder="Search people" aria-label="Search people">
+                </label>
+                <div id="replace-list" class="select-list"></div>
             </div>
         </div>
+    </div>
+
+    <!-- Alert dialog -->
+    <div class="sheet-overlay alert-overlay" id="confirm-overlay" hidden>
+        <div class="alert glass" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+            <h3 id="confirm-title"></h3>
+            <p id="confirm-message"></p>
+            <div class="alert-actions">
+                <button class="alert-btn" id="confirm-cancel">Cancel</button>
+                <button class="alert-btn alert-btn-strong" id="confirm-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating status (swap guidance + toasts) -->
+    <div class="toast-stack" aria-live="polite">
+        <div class="swap-banner glass" id="swap-banner" hidden>
+            <svg><use href="#i-swap"/></svg>
+            <span id="swap-banner-text">Pick the first shift to swap.</span>
+            <button class="btn btn-plain btn-sm" data-action="toggle-swap">Done</button>
+        </div>
+        <div class="toast glass" id="toast" hidden></div>
     </div>
 
     <script src="/static/app.js"></script>
