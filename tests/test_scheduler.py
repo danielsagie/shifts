@@ -29,9 +29,9 @@ def assert_hard_rules(test, cal, schedule):
 
 class HardRules(unittest.TestCase):
     def test_project_data_files(self):
-        for name in ("workers.json", "test_february.json"):
-            with self.subTest(file=name):
-                cal = load_from_json(os.path.join(ROOT, name))
+        for rel_path in ("workers.json", os.path.join("tests", "test_february.json")):
+            with self.subTest(file=rel_path):
+                cal = load_from_json(os.path.join(ROOT, rel_path))
                 assert_hard_rules(self, cal, generate_schedule(cal))
 
 
